@@ -13,18 +13,20 @@ class RegisterViewController: UIViewController {
 
     @IBOutlet weak var textFieldEmail: UITextField!
     @IBOutlet weak var textFieldPassword: UITextField!
-    @IBOutlet weak var labelMessage: UILabel!
     @IBOutlet weak var buttonRegister: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //initialising firebase
-        //FirebaseApp.configure()
         textFieldPassword.isSecureTextEntry = true
         setupTextFieldLayout(withTextField: textFieldEmail)
         setupTextFieldLayout(withTextField: textFieldPassword)
         setupButtonLayout()
+        
+        let gesture = UITapGestureRecognizer()
+        gesture.addTarget(self, action: #selector(resignResponder(_:)))
+        self.view.isUserInteractionEnabled = true
+        self.view.addGestureRecognizer(gesture)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -37,6 +39,10 @@ class RegisterViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
+}
+
+//MARK: -Setup Layout
+extension RegisterViewController {
     func setupButtonLayout() {
         buttonRegister.layer.borderWidth = 2.0
         buttonRegister.layer.cornerRadius = 3.0
@@ -50,27 +56,47 @@ class RegisterViewController: UIViewController {
         textField.layer.borderColor = UIColor(red: 206.0/255.0, green: 206.0/255.0, blue: 206.0/255.0, alpha: 1.0).cgColor
         textField.layer.masksToBounds = true
     }
+}
+
+//MARK: -Action
+extension RegisterViewController {
+    @objc func resignResponder(_ sender: UITapGestureRecognizer) {
+        textFieldEmail.resignFirstResponder()
+        textFieldPassword.resignFirstResponder()
+    }
     
     //button for registration
     @IBAction func buttonRegister(sender: UIButton) {
         let email = textFieldEmail.text
         let password = textFieldPassword.text
         
-        if (password?.count)! >= 6 {
-            Auth.auth().createUser(withEmail: email!, password: password!, completion: { (user: User?, error) in
-                if error == nil {
-                    let storyBoard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
-                    let rootVc = storyBoard.instantiateViewController(withIdentifier: "HomeList")
-                    self.navigationController?.pushViewController(rootVc, animated: true)
-                }else{
-                    self.labelMessage.text = "Daftar gagal, Coba lagi!"
-                }
-                
-            })
+        if email != "" && password != "" {
+            if (password?.count)! >= 6 {
+                Auth.auth().createUser(withEmail: email!, password: password!, completion: { (user: User?, error) in
+                    if error == nil {
+                        let storyBoard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+                        let rootVc = storyBoard.instantiateViewController(withIdentifier: "HomeList")
+                        self.navigationController?.pushViewController(rootVc, animated: true)
+                    }else{
+                        self.setupAlertView(withMessage: (error?.localizedDescription)!)
+                    }
+                    
+                })
+            } else {
+                setupAlertView(withMessage: "Masukkan password lebih dari 6 karakter")
+            }
         } else {
-            self.labelMessage.text = "Password harus 6 karakter"
+            setupAlertView(withMessage: "Mohon isi semua kolom")
         }
         
     }
     
+    func setupAlertView(withMessage message: String) {
+        let alertController = UIAlertController(title: "Daftar", message: message, preferredStyle: .alert)
+        
+        let defaultAction = UIAlertAction(title: "OK", style: .cancel, handler: nil)
+        alertController.addAction(defaultAction)
+        
+        self.present(alertController, animated: true, completion: nil)
+    }
 }

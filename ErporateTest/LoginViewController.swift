@@ -22,7 +22,18 @@ class LoginViewController: UIViewController {
         setupTextFieldLayout(withTextField: textFieldEmail)
         setupTextFieldLayout(withTextField: textFieldPassword)
         self.setupButtonLayout()
+        
+        let gesture = UITapGestureRecognizer()
+        gesture.addTarget(self, action: #selector(resignResponder(_:)))
+        self.view.isUserInteractionEnabled = true
+        self.view.addGestureRecognizer(gesture)
+        
         // Do any additional setup after loading the view.
+    }
+    
+    @objc func resignResponder(_ sender: UITapGestureRecognizer) {
+        textFieldEmail.resignFirstResponder()
+        textFieldPassword.resignFirstResponder()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -34,7 +45,10 @@ class LoginViewController: UIViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
+}
+
+//MARK: - Setup Layout
+extension LoginViewController {
     func setupButtonLayout() {
         buttonRegister.layer.borderWidth = 2.0
         buttonRegister.layer.cornerRadius = 3.0
@@ -48,32 +62,40 @@ class LoginViewController: UIViewController {
         textField.layer.borderColor = UIColor(red: 206.0/255.0, green: 206.0/255.0, blue: 206.0/255.0, alpha: 1.0).cgColor
         textField.layer.masksToBounds = true
     }
-    
-    @IBAction func buttonLogin(sender: UIButton) {
-        Auth.auth().signIn(withEmail: self.textFieldEmail.text!, password: self.textFieldPassword.text!) { (user, error) in
-            
-            if error == nil {
-                
-                //Print into the console if successfully logged in
-                print("You have successfully logged in")
-                
-                //Go to the HomeViewController if the login is sucessful
-                let storyBoard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
-                let rootVc = storyBoard.instantiateViewController(withIdentifier: "HomeList")
-                self.navigationController?.pushViewController(rootVc, animated: true)
-                //self.present(rootVc, animated: true, completion: nil)
-                
-            } else {
-                
-                //Tells the user that there is an error and then gets firebase to tell them the error
-                let alertController = UIAlertController(title: "Error", message: error?.localizedDescription, preferredStyle: .alert)
-                
-                let defaultAction = UIAlertAction(title: "OK", style: .cancel, handler: nil)
-                alertController.addAction(defaultAction)
-                
-                self.present(alertController, animated: true, completion: nil)
-            }
-        }
-    }
+}
 
+//MARK: - Action
+extension LoginViewController {
+    @IBAction func buttonLogin(sender: UIButton) {
+        
+        if textFieldEmail.text != "" && textFieldPassword.text != "" {
+            Auth.auth().signIn(withEmail: self.textFieldEmail.text!, password: self.textFieldPassword.text!) { (user, error) in
+                
+                if error == nil {
+                    print("success Login")
+                    
+                    //Go to the ListViewController if the login is sucessful
+                    let storyBoard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+                    let rootVc = storyBoard.instantiateViewController(withIdentifier: "HomeList")
+                    self.navigationController?.pushViewController(rootVc, animated: true)
+                    
+                } else {
+                    self.setupAlertView(withMessage: (error?.localizedDescription)!)
+                }
+            }
+        } else {
+            setupAlertView(withMessage: "Mohon isi semua kolom")
+        }
+        
+        
+    }
+    
+    func setupAlertView(withMessage message: String) {
+        let alertController = UIAlertController(title: "Login", message: message, preferredStyle: .alert)
+        
+        let defaultAction = UIAlertAction(title: "OK", style: .cancel, handler: nil)
+        alertController.addAction(defaultAction)
+        
+        self.present(alertController, animated: true, completion: nil)
+    }
 }

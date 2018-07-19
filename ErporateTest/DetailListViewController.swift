@@ -11,11 +11,11 @@ import GoogleMaps
 import CoreLocation
 import SDWebImage
 
-class DetailListViewController: UIViewController, GMSMapViewDelegate {
+class DetailListViewController: UIViewController, UIGestureRecognizerDelegate, GMSMapViewDelegate {
     
     @IBOutlet weak var imageTitle: UIImageView!
     @IBOutlet weak var labelTitle: UILabel!
-    @IBOutlet weak var textDesk: UITextView!
+    @IBOutlet weak var labelDesk: UILabel!
     @IBOutlet weak var mapView: GMSMapView!
     var modelData: [ModelData] = []
     var locationManager = CLLocationManager()
@@ -42,12 +42,25 @@ class DetailListViewController: UIViewController, GMSMapViewDelegate {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    //imageTitle.sd_setImage(with: URL(string: imageURL), placeholderImage: UIImage(named: "placeholder"))
+
+}
+
+// MARK: - CLLocationManagerDelegate
+extension DetailListViewController: CLLocationManagerDelegate {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let _: CLLocationCoordinate2D = manager.location?.coordinate else { return }
+        setupLocation()
+    }
+    
+}
+
+//MARK: - Setup
+extension DetailListViewController {
     func setupSubView() {
         for data in modelData {
             imageTitle.sd_setImage(with: URL(string: data.gambarPariwisata), placeholderImage: UIImage(named: "placeholder"))
             labelTitle.text = data.namaPariwisata
-            textDesk.text = data.detailPariwisata
+            labelDesk.text = data.detailPariwisata
         }
     }
     
@@ -101,14 +114,5 @@ class DetailListViewController: UIViewController, GMSMapViewDelegate {
         } catch {
             NSLog("Map styles failed to load. \(error)")
         }
-    }
-
-}
-
-// MARK: - CLLocationManagerDelegate
-extension DetailListViewController: CLLocationManagerDelegate {
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let _: CLLocationCoordinate2D = manager.location?.coordinate else { return }
-        setupLocation()
     }
 }
