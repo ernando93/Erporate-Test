@@ -1,0 +1,6 @@
+framework module Pods_ErporateTest {
+  umbrella header "Pods-ErporateTest-umbrella.h"
+
+  export *
+  module * { export * }
+}
